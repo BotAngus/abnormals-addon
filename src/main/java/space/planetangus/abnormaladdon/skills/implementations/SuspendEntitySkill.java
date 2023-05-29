@@ -1,26 +1,28 @@
 package space.planetangus.abnormaladdon.skills.implementations;
 
 
-import me.xemor.superheroes.Superhero;
 import me.xemor.superheroes.data.HeroHandler;
 import me.xemor.superheroes.events.PlayerGainedSuperheroEvent;
 import me.xemor.superheroes.skills.Skill;
 import me.xemor.superheroes.skills.implementations.SkillImplementation;
 import me.xemor.superheroes.skills.skilldata.SkillData;
 import org.bukkit.World;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import space.planetangus.abnormaladdon.AbnormalAddon;
-import space.planetangus.abnormaladdon.Tuple2;
+import space.planetangus.abnormaladdon.AbnormalsAddon;
 import space.planetangus.abnormaladdon.skills.skilldata.SuspendEntityData;
 
 import java.util.*;
 
 public class SuspendEntitySkill extends SkillImplementation {
-    private final Map<Player, Set<Tuple2<Entity, Vector>>> suspendedEntities = new HashMap<>();
+
+    private final Map<Player, Map<Entity, EntityState>> suspendedEntities = new HashMap<>();
 
     public SuspendEntitySkill(HeroHandler heroHandler) {
         super(heroHandler);
@@ -46,60 +48,92 @@ public class SuspendEntitySkill extends SkillImplementation {
                     cancel();
                     return;
                 }
-                Superhero superhero = heroHandler.getSuperhero(player);
-                Collection<SkillData> skillDataCollection = superhero.getSkillData(Skill.getSkill("SUSPENDENTITY"));
+
+                Collection<SkillData> skillDataCollection = heroHandler.getSuperhero(player)
+                        .getSkillData(Skill.getSkill("SUSPENDENTITY"));
                 if (skillDataCollection.isEmpty()) {
                     cancel();
                     return;
                 }
+
+                Map<Entity, EntityState> suspendedByPlayer = suspendedEntities.getOrDefault(player, new HashMap<>());
+
                 for (SkillData data : skillDataCollection) {
                     SuspendEntityData suspendEntityData = (SuspendEntityData) data;
                     World world = player.getWorld();
                     double diameter = suspendEntityData.getDiameter();
                     Collection<Entity> entities;
 
-                    List<EntityType> include = suspendEntityData.getInclude();
-                    List<EntityType> exclude = suspendEntityData.getExclude();
+                    Set<EntityType> include = suspendEntityData.getInclude();
+                    Set<EntityType> exclude = suspendEntityData.getExclude();
 
-                    // Get entities in radius then add them to the suspend list
                     if (suspendEntityData.isIncludeAll()) {
-                        entities = world.getNearbyEntities(player.getLocation(), diameter, diameter, diameter);
+                        entities = world.getNearbyEntities(player.getLocation(),
+                                diameter,
+                                diameter,
+                                diameter);
                     } else {
                         entities = world.getNearbyEntities(player.getLocation(),
-                                diameter, diameter, diameter,
-                                e -> !exclude.contains(e.getType()) && include.contains(e.getType()));
+                                diameter,
+                                diameter,
+                                diameter,
+                                e -> include.contains(e.getType()) && !exclude.contains(e.getType()));
                     }
-                    entities.removeIf(o -> o.equals(player));
-                    // Get entities suspended by the player or an empty set
-                    Set<Tuple2<Entity, Vector>> suspendedByPlayer = suspendedEntities.getOrDefault(player, new HashSet<>());
-                    for (Iterator<Tuple2<Entity, Vector>> iterator = suspendedByPlayer.iterator(); iterator.hasNext(); ) {
-                        Tuple2<Entity, Vector> element = iterator.next();
-                        Entity e = element.getA();
-                        if (!entities.contains(e)) {
-                            e.setGravity(true);
-                            e.setSilent(false);
-                            e.setInvulnerable(false);
-                            if (e instanceof LivingEntity) {
-                                ((LivingEntity) e).setAI(true);
-                            }
-                            e.setVelocity(new Vector(0, 200, 0));
+
+                    // Remove the player
+                    entities.removeIf(e -> e.equals(player));
+
+                    // New entities, freeze them
+                    entities.stream().filter(entity -> !suspendedByPlayer.containsKey(entity)).forEach(entity -> {
+                        suspendedByPlayer.put(entity, new EntityState(entity));
+                    });
+                    for (Iterator<Map.Entry<Entity, EntityState>> iterator = suspendedByPlayer.entrySet().iterator(); iterator.hasNext(); ) {
+                        Map.Entry<Entity, EntityState> entry = iterator.next();
+                        if (!entities.contains(entry.getKey())) {
+                            Entity entity = entry.getKey();
+                            entry.getValue().applyState(entity);
                             iterator.remove();
                         }
                     }
-                    entities.forEach(e -> {
-                        e.setGravity(false);
-                        e.setSilent(true);
-                        e.setInvulnerable(true);
-                        if (e instanceof LivingEntity) {
-                            ((LivingEntity) e).setAI(false);
-                        }
-                        System.out.println(e.getVelocity());
-                        suspendedByPlayer.add(new Tuple2<>(e, e.getVelocity().clone()));
-                        e.setVelocity(new Vector());
-                    });
                     suspendedEntities.put(player, suspendedByPlayer);
+
                 }
             }
-        }.runTaskTimer(AbnormalAddon.getPlugin(), 0L, 1L);
+        }.runTaskTimer(AbnormalsAddon.getPlugin(), 0L, 1L);
+    }
+
+    private static class EntityState {
+        private final Vector velocity;
+        private final Optional<Boolean> ai;
+        private final boolean gravity;
+        private final boolean silent;
+        private final boolean invulnerable;
+
+        private EntityState(Entity entity) {
+            this.velocity = entity.getVelocity();
+            entity.setVelocity(new Vector());
+            this.gravity = entity.hasGravity();
+            entity.setGravity(false);
+            this.silent = entity.isSilent();
+            entity.setSilent(true);
+            this.invulnerable = entity.isInvulnerable();
+            entity.setInvulnerable(true);
+            if (entity instanceof LivingEntity) {
+                this.ai = Optional.of(((LivingEntity) entity).hasAI());
+                ((LivingEntity) entity).setAI(false);
+            } else {
+                this.ai = Optional.empty();
+            }
+        }
+
+        public void applyState(Entity entity) {
+            entity.setVelocity(velocity);
+            entity.setInvulnerable(invulnerable);
+            entity.setSilent(silent);
+            if (entity instanceof LivingEntity) {
+                ai.ifPresent(value -> ((LivingEntity) entity).setAI(value));
+            }
+            entity.setGravity(gravity);
+        }
     }
 }

@@ -4,30 +4,30 @@ import me.xemor.superheroes.skills.skilldata.SkillData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SuspendEntityData extends SkillData {
     private final double diameter;
 
     private final boolean includeAll;
-    private final List<EntityType> exclude;
-    private final List<EntityType> include;
+    private final Set<EntityType> exclude;
+    private final Set<EntityType> include;
 
     public SuspendEntityData(int skill, ConfigurationSection configurationSection) {
         super(skill, configurationSection);
         diameter = configurationSection.getDouble("radius", 5);
-        exclude = configurationSection.getStringList("exclude").stream().map(EntityType::valueOf).collect(Collectors.toList());
-        include = configurationSection.getStringList("include").stream().map(EntityType::valueOf).collect(Collectors.toList());
+        exclude = configurationSection.getStringList("exclude").stream().map(EntityType::valueOf).collect(Collectors.toSet());
+        include = configurationSection.getStringList("include").stream().map(EntityType::valueOf).collect(Collectors.toSet());
 
         includeAll = exclude.isEmpty() && include.isEmpty();
     }
 
-    public List<EntityType> getExclude() {
+    public Set<EntityType> getExclude() {
         return exclude;
     }
 
-    public List<EntityType> getInclude() {
+    public Set<EntityType> getInclude() {
         return include;
     }
 
