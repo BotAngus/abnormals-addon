@@ -1,0 +1,7 @@
+name: AbnormalAddon
+version: '${project.version}'
+main: space.planetangus.abnormaladdon.AbnormalAddon
+api-version: 1.19
+authors: [ Angus ]
+description: Addon for SuperHeroes2
+depend: [Superheroes]
