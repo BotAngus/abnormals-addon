@@ -1,4 +1,4 @@
-package space.planetangus.abnormaladdon.skills.implementations;
+package space.planetangus.abnormalsaddon.skills.implementations;
 
 import me.xemor.superheroes.Superhero;
 import me.xemor.superheroes.data.HeroHandler;
@@ -9,7 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockFromToEvent;
-import space.planetangus.abnormaladdon.skills.skilldata.SuspendFluidData;
+import space.planetangus.abnormalsaddon.skills.skilldata.SuspendFluidData;
 
 import java.util.Collection;
 

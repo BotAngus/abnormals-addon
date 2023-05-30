@@ -1,4 +1,4 @@
-package space.planetangus.abnormaladdon.skills.implementations;
+package space.planetangus.abnormalsaddon.skills.implementations;
 
 
 import me.xemor.superheroes.data.HeroHandler;
@@ -15,8 +15,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-import space.planetangus.abnormaladdon.AbnormalsAddon;
-import space.planetangus.abnormaladdon.skills.skilldata.SuspendEntityData;
+import space.planetangus.abnormalsaddon.AbnormalsAddon;
+import space.planetangus.abnormalsaddon.skills.skilldata.SuspendEntityData;
 
 import java.util.*;
 
@@ -50,13 +50,14 @@ public class SuspendEntitySkill extends SkillImplementation {
                 }
 
                 Collection<SkillData> skillDataCollection = heroHandler.getSuperhero(player)
-                        .getSkillData(Skill.getSkill("SUSPENDENTITY"));
+                    .getSkillData(Skill.getSkill("SUSPENDENTITY"));
                 if (skillDataCollection.isEmpty()) {
                     cancel();
                     return;
                 }
 
-                Map<Entity, EntityState> suspendedByPlayer = suspendedEntities.getOrDefault(player, new HashMap<>());
+                Map<Entity, EntityState> suspendedByPlayer =
+                    suspendedEntities.getOrDefault(player, new HashMap<>());
 
                 for (SkillData data : skillDataCollection) {
                     SuspendEntityData suspendEntityData = (SuspendEntityData) data;
@@ -69,25 +70,25 @@ public class SuspendEntitySkill extends SkillImplementation {
 
                     if (suspendEntityData.isIncludeAll()) {
                         entities = world.getNearbyEntities(player.getLocation(),
-                                diameter,
-                                diameter,
-                                diameter);
+                            diameter,
+                            diameter,
+                            diameter);
                     } else {
                         entities = world.getNearbyEntities(player.getLocation(),
-                                diameter,
-                                diameter,
-                                diameter,
-                                e -> include.contains(e.getType()) && !exclude.contains(e.getType()));
+                            diameter,
+                            diameter,
+                            diameter,
+                            e -> include.contains(e.getType()) && !exclude.contains(e.getType()));
                     }
 
                     // Remove the player
                     entities.removeIf(e -> e.equals(player));
 
                     // New entities, freeze them
-                    entities.stream().filter(entity -> !suspendedByPlayer.containsKey(entity)).forEach(entity -> {
-                        suspendedByPlayer.put(entity, new EntityState(entity));
-                    });
-                    for (Iterator<Map.Entry<Entity, EntityState>> iterator = suspendedByPlayer.entrySet().iterator(); iterator.hasNext(); ) {
+                    entities.stream().filter(entity -> !suspendedByPlayer.containsKey(entity))
+                        .forEach(entity -> suspendedByPlayer.put(entity, new EntityState(entity)));
+                    for (Iterator<Map.Entry<Entity, EntityState>> iterator =
+                         suspendedByPlayer.entrySet().iterator(); iterator.hasNext(); ) {
                         Map.Entry<Entity, EntityState> entry = iterator.next();
                         if (!entities.contains(entry.getKey())) {
                             Entity entity = entry.getKey();
@@ -104,10 +105,10 @@ public class SuspendEntitySkill extends SkillImplementation {
 
     private static class EntityState {
         private final Vector velocity;
-        private final Optional<Boolean> ai;
         private final boolean gravity;
         private final boolean silent;
         private final boolean invulnerable;
+        private boolean ai = false;
 
         private EntityState(Entity entity) {
             this.velocity = entity.getVelocity();
@@ -119,10 +120,8 @@ public class SuspendEntitySkill extends SkillImplementation {
             this.invulnerable = entity.isInvulnerable();
             entity.setInvulnerable(true);
             if (entity instanceof LivingEntity) {
-                this.ai = Optional.of(((LivingEntity) entity).hasAI());
+                this.ai = ((LivingEntity) entity).hasAI();
                 ((LivingEntity) entity).setAI(false);
-            } else {
-                this.ai = Optional.empty();
             }
         }
 
@@ -131,7 +130,7 @@ public class SuspendEntitySkill extends SkillImplementation {
             entity.setInvulnerable(invulnerable);
             entity.setSilent(silent);
             if (entity instanceof LivingEntity) {
-                ai.ifPresent(value -> ((LivingEntity) entity).setAI(value));
+                ((LivingEntity) entity).setAI(ai);
             }
             entity.setGravity(gravity);
         }

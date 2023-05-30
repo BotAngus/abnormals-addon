@@ -1,4 +1,4 @@
-package space.planetangus.abnormaladdon.skills.skilldata;
+package space.planetangus.abnormalsaddon.skills.skilldata;
 
 import me.xemor.superheroes.skills.skilldata.SkillData;
 import org.bukkit.configuration.ConfigurationSection;

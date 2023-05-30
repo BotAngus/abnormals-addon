@@ -1,15 +1,15 @@
-package space.planetangus.abnormaladdon;
+package space.planetangus.abnormalsaddon;
 
 import me.xemor.superheroes.Superheroes;
 import me.xemor.superheroes.data.HeroHandler;
 import me.xemor.superheroes.skills.implementations.SkillImplementation;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import space.planetangus.abnormaladdon.skills.Skill;
-import space.planetangus.abnormaladdon.skills.implementations.SuspendEntitySkill;
-import space.planetangus.abnormaladdon.skills.implementations.SuspendFluidSkill;
+import space.planetangus.abnormalsaddon.skills.Skill;
+import space.planetangus.abnormalsaddon.skills.implementations.SuspendEntitySkill;
+import space.planetangus.abnormalsaddon.skills.implementations.SuspendFluidSkill;
 
-public final class AbnormalAddon extends JavaPlugin {
+public final class AbnormalsAddon extends JavaPlugin {
 
     private static Plugin plugin;
 

@@ -1,6 +1,6 @@
-name: AbnormalAddon
+name: AbnormalsAddon
 version: '${project.version}'
-main: space.planetangus.abnormaladdon.AbnormalAddon
+main: space.planetangus.abnormalsaddon.AbnormalAddon
 api-version: 1.19
 authors: [ Angus ]
 description: Addon for SuperHeroes2

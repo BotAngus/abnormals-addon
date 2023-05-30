@@ -68,9 +68,9 @@
         <dependency>
             <groupId>me.xemor</groupId>
             <artifactId>SuperHeroes2</artifactId>
-            <version>3.12.0</version>
+            <version>[3.12.0, )</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/superheroes-3.12.0-all.jar</systemPath>
+            <systemPath>${project.basedir}/src/main/resources/superheroes-3.12.1-all.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>

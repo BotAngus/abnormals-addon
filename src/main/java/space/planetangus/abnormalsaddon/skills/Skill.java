@@ -1,7 +1,7 @@
-package space.planetangus.abnormaladdon.skills;
+package space.planetangus.abnormalsaddon.skills;
 
-import space.planetangus.abnormaladdon.skills.skilldata.SuspendEntityData;
-import space.planetangus.abnormaladdon.skills.skilldata.SuspendFluidData;
+import space.planetangus.abnormalsaddon.skills.skilldata.SuspendEntityData;
+import space.planetangus.abnormalsaddon.skills.skilldata.SuspendFluidData;
 
 import static me.xemor.superheroes.skills.Skill.registerSkill;
 
